@@ -6,7 +6,10 @@
 #include <stdexcept>
 #include <limits>
 #include <random>
+#include <string>
 
+#define __FILENAME__ (strrchr(__FILE__, '/') ? strrchr(__FILE__, '/') + 1 : __FILE__)
+#define POSITION std::string(__FILENAME__) + std::string(", line ") +  std::to_string(__LINE__)
 
 inline double logAddExp(double a, double b) {
   double max_exp = (a > b ? a : b);
@@ -32,7 +35,7 @@ static double logProbSub(double logProb1, double logProb2) {
   } else if (logProb1 == logProb2) {
     return std::numeric_limits<double>::lowest();
   } else {
-    LOG(error) << "Probability < 0.";
+    std::cout << "Probability < 0.";
     throw (std::underflow_error("logProb1ability cannot store values below 0"));
   }
 }
@@ -191,12 +194,6 @@ class LogProbability {
 
   std::string strLog() const { return std::to_string(logProb); }
   std::string strLinear() const { return std::to_string(std::exp(logProb)); }
-
-  std::ostream &save(std::ostream &os) const { return oswrite(os, logProb); }
-  std::istream &load(std::istream &is) { return isread(is, logProb); }
-
-  friend std::ostream &operator<<(std::ostream &os, const LogProbability &v) { return v.save(os); }
-  friend std::istream &operator>>(std::istream &is, LogProbability &v) { return v.load(is); }
 
   // factory
   static LogProbability fromLinear(double srcLinear) {

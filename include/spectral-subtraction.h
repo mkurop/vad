@@ -11,15 +11,7 @@
  * \param[in] subtraction_floor the minimum of the enhanced speech magnitude spectrum
  * \param[in] oversubtraction oversubtraction parameter
  */
-arma::Col<float> spectralSubtraction(arma::Col<float> &noisy_psd, arma::Col<float> &noise_psd, float subtraction_floor, float oversubtraction){
-
-  arma::Col<float> enhanced_speech_magnitude_spectrum = \
-      arma::sqrt(noisy_psd) - oversubtraction*arma::sqrt(noise_psd)
-
-  enhanced_speech_magnitude_spectrum.clamp(subtraction_floor,arma::max(enhanced_speech_magnitude_spectrum))
-
-  return enhanced_speech_magnitude_spectrum 
-}
+arma::Col<float> SpectralSubtraction(arma::Col<float> &noisy_psd, arma::Col<float> &noise_psd, float subtraction_floor, float oversubtraction);
 
 
 #endif

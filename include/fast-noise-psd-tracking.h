@@ -23,6 +23,14 @@ public:
 
 static float db2linpower(const float db); 
 
+arma::Col<float> amax(const arma::Col<float>& V, float val);
+
+arma::Col<float> amin(const arma::Col<float> &V, float val); 
+
+arma::Row<float> amaxR(const arma::Row<float> &V, float val); 
+
+arma::Row<float> aminR(const arma::Row<float> &V, float val); 
+
 //! Class for tracking the power spectral density of the noise contaminatig the speech signal
 /*!
  * The implementation is based on the article:
@@ -47,7 +55,7 @@ private:
   arma::Col<float> psi;
   arma::Col<float> p;
   arma::Col<float> speech_psd;
-  bool speech_psd = false;
+  bool speech_psd_set_flag = false;
   NDeque<arma::Col<float>> queue;
   float sample_rate;
   FastNsePowState state;
@@ -89,12 +97,14 @@ public:
 
 
 private:
+  
+  arma::Col<float> smoothGamma();
     
   const FastNsePowState &getState() { return state; }
 
   void setPsi(); 
 
   void setP();
-}
+};
 
 #endif // ZOOMER_NOISEPSDTRACKING_FASTNOISEPSDTRACKING_H_
