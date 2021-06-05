@@ -9,15 +9,33 @@ static float db2linpower(const float db) {
   return aux;
 }
 
+arma::Col<float> amax(const arma::Col<float>& V, float val)
+{
+	return clamp(V, val, std::max(V.max(), val));
+}
+
+arma::Col<float> amin(const arma::Col<float> &V, float val) {
+  return clamp(V, std::min(V.min(), val), val);
+}
+
+arma::Row<float> amaxR(const arma::Row<float> &V, float val) {
+  return clamp(V, val, std::max(V.max(), val));
+}
+
+arma::Row<float> aminR(const arma::Row<float> &V, float val) {
+  return clamp(V, std::min(V.min(), val), val);
+}
 
 FastNoisePSDTracking::FastNoisePSDTracking(float sample_rate) : sample_rate(sample_rate) {
-  state.frmCntr = 0;
+  state.frm_cntr = 0;
   queue = NDeque<arma::Col<float>>(3);
 }
+
 void FastNoisePSDTracking::setPrevFrameSpeechPSDEstimate(const arma::Col<float> &speech_psd) {
-  speech_psd = true;
+  speech_psd_set_flag = true;
   this->speech_psd = speech_psd;
 }
+
 void FastNoisePSDTracking::noisePowRunning(const arma::Col<float> &noisy_per) {
   if (state.frm_cntr == 0) {
     state.frm_cntr++;
@@ -27,7 +45,7 @@ void FastNoisePSDTracking::noisePowRunning(const arma::Col<float> &noisy_per) {
     setP();
     return;
   }
-  if (!speech_psd) {
+  if (!speech_psd_set_flag) {
     throw std::logic_error(
         "Speech spectrum not set, program exits ... run first the method "
         "setPrevFrameSpeechPSDEstimate ...");
@@ -66,9 +84,42 @@ void FastNoisePSDTracking::noisePowRunning(const arma::Col<float> &noisy_per) {
   state.noise_pow = p % state.noise_pow +
                    (1 - p) % (alpha_n * state.noise_pow + (1 - alpha_n) * N);
 
-  speech_psd = false;
+  speech_psd_set_flag = false;
 }
 
-const arma::Col<float> FastNoisePSDTracking::getNoisePsd() { return state.noisePow; }
+arma::Col<float> FastNoisePSDTracking::smoothGamma(){
+  arma::Col<float> aux = arma::zeros<arma::Col<float>>(K/2+1);
+  arma::Col<float> out = arma::zeros<arma::Col<float>>(K/2+1);
+  for(auto it = queue.begin(); it != queue.end(); ++it){
+    aux += 1./queue.size() * *it;
+  }
+  for(int i = 0; i < K/2+1; i++){
+    int l = ((i-deltak) < 0) ? 0 : i-deltak;
+    int h = ((i+deltak) > K/2) ? K/2 : i+deltak;
+    out[i] = arma::mean( aux.rows(l,h) );
+  }
+  return out;
+}
 
-const FastNsePowState &FastNoisePSDTracking::getState() { return state; }
+void FastNoisePSDTracking::setPsi() {
+  psi = arma::zeros<arma::Col<float>>(K/2+1);
+  for(size_t i = 0; i < (K/2+1); i++){
+    float f = i/(float)K*sample_rate;
+    if(f < 1000.){
+      psi[i] = 5.;
+      continue;
+    }
+    if((f >= 1000.) && (f < 3000.)){
+      psi[i] = 6.5;
+      continue;
+    }
+    if(f > 3000.){
+      psi[i] = 8.;
+      continue;
+    }
+  }
+}
+
+void FastNoisePSDTracking::setP() {
+  p = arma::zeros<arma::Col<float>>(K/2+1);
+}
