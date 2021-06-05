@@ -45,4 +45,7 @@ compile_commands.json
 .cache/
 
 # SpaceVim files
-**/.SpaceVim.d/ 
+**/.SpaceVim.d/
+
+# data files
+*.dat
