@@ -30,3 +30,19 @@
 *.exe
 *.out
 *.app
+
+# scratch directory
+scratch/
+
+# cmake directories
+build/
+cmake-build-Release/
+cmake-build-Clang/
+
+# compilation database
+compile_commands.json
+
+.cache/
+
+# SpaceVim files
+**/.SpaceVim.d/ 
