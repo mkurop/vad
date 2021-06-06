@@ -61,6 +61,10 @@ private:
   FastNsePowState state;
 
 public:
+
+  //! Default constructor
+  FastNoisePSDTracking() = default;
+
   //! A constructor.
   /*!
    * The constructor for the object performing the noise tracking.

@@ -17,7 +17,7 @@
 	*/
 
 
-class Vad {
+class Vad_ {
   bool start;
   int mag_len;
   arma::Row<float> X_prev;
@@ -35,7 +35,7 @@ class Vad {
    * \param a01 log natural base probability of noise -> speech transition
    * \param a10 log natural base probability of speech -> noise transition
    */
-  Vad(int samplingRate = 16000, int frame = 400, int frame2 = 512, double a01 = -.3, double a10 = -.3); 
+  Vad_(int samplingRate = 16000, int frame = 400, int frame2 = 512, double a01 = -.3, double a10 = -.3); 
 
   /*!
    * \brief Method for speech presence probability
