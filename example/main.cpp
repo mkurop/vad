@@ -1,5 +1,7 @@
 #include "spectral-subtraction.h"
+#include <algorithm>
 #include <fast-noise-psd-tracking.h>
+#include <sohnvad.h>
 #include <iostream>
 #include <ostream>
 #include <vad.h>
@@ -36,22 +38,30 @@ int main(int argc, char *argv[]){
 
   FastNoisePSDTracking noiseTracking(audioFile.getSampleRate());
 
-  Vad vad(audioFile.getSampleRate(), kFrame, kFrame);
-  
+  Vad_ vad(audioFile.getSampleRate(), kFrame, kFrame);
+
+  t2r::Vad sohnvad(audioFile.getSampleRate());
+
 
   // VAD decision file
   std::ofstream vad_decision_text_file;
 
   vad_decision_text_file.open("../../data/vad.dat");
 
+  std::vector<float>  vad_decisions{};
+
+  // Vector of signal_frame powers
+  std::vector<float> powers_of_the_signal_frame{};
+
   while(start + kFrame < audioFile.getNumSamplesPerChannel()){
 
-    arma::Col<float> signal_frame = GetFrame(audioFile,start,kFrame);
+    arma::Col<float> signal_frame_raw = GetFrame(audioFile,start,kFrame);
 
     // Dither
-    arma::Col<float> dither = arma::randn<arma::Col<float>>(signal_frame.size());
+    arma::arma_rng::set_seed(1000);
+    arma::Col<float> dither = arma::randn<arma::Col<float>>(signal_frame_raw.size());
     dither *= 1.e-7;
-    signal_frame += dither;
+    arma::Col<float> signal_frame = signal_frame_raw + dither;
 
     // Window frame
     signal_frame %= window;
@@ -61,6 +71,10 @@ int main(int argc, char *argv[]){
     arma::Col<float> power_density_spectrum_of_signal_frame = (arma::real(signal_frame_spectrum % arma::conj(signal_frame_spectrum)));
 
     power_density_spectrum_of_signal_frame = power_density_spectrum_of_signal_frame.head_rows(kFrame/2+1);
+
+    // Signal frame power
+    double power_of_the_signal_frame = arma::sum(signal_frame%signal_frame);
+    powers_of_the_signal_frame.push_back(power_of_the_signal_frame);
     
     // Noise PSD
     arma::Col<float> power_density_spectrum_of_noise(kFrame/2+1);
@@ -80,13 +94,18 @@ int main(int argc, char *argv[]){
 
     double spprb = vad.vad(power_density_spectrum_of_signal_frame.t(), power_density_spectrum_of_noise.t());
 
-    std::cout << spprb << std::endl;
+    vad_decisions.push_back(spprb);
 
-    vad_decision_text_file << (spprb > 0.5 ? 1 : 0) << std::endl;
+    std::cout << "speech probability: " << spprb << ", " << sohnvad(signal_frame_raw) << std::endl;
+
 
     start += kFrame;
   }
 
+  float max_power = *std::max_element(powers_of_the_signal_frame.begin(),powers_of_the_signal_frame.end());
+  // for(int i = 0; i < vad_decisions.size(); i++){
+  //   vad_decision_text_file << vad_decisions[i] << ", "<<  powers_of_the_signal_frame[i]/max_power*1000. << std::endl;
+  // }
   vad_decision_text_file.close();
 
 
