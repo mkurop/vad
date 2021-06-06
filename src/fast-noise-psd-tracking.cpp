@@ -51,6 +51,7 @@ void FastNoisePSDTracking::noisePowRunning(const arma::Col<float> &noisy_per) {
         "setPrevFrameSpeechPSDEstimate ...");
   }
   //< compute a posteriori SNR
+
   arma::Col<float> gamma = noisy_per / state.noise_pow;
   //< compute a priori SNR
   arma::Col<float> ksi = amax(alpha_ns * speech_psd / state.noise_pow +

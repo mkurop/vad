@@ -1,6 +1,6 @@
 #include <vad.h>
 
-Vad::Vad(int samplingRate, int frame, int frame2, double a01, double a10) : start(true) {
+Vad_::Vad_(int samplingRate, int frame, int frame2, double a01, double a10) : start(true) {
   this->mag_len = frame2 / 2 + 1;
   this->ksi_min = pow(10.0, -250.0 / 10.0);
   this->a01 = a01;
@@ -11,7 +11,7 @@ Vad::Vad(int samplingRate, int frame, int frame2, double a01, double a10) : star
   this->X_prev = arma::zeros<arma::Row<float>>(1, mag_len);
 }
 
-double Vad::vad(const arma::Row<float> &X, const arma::Row<float> &lambdaN) {
+double Vad_::vad(const arma::Row<float> &X, const arma::Row<float> &lambdaN) {
   arma::Row<float> _lambdaN = amaxR(lambdaN, 1e-3);
 
   arma::Row<float> gammak = aminR(X / _lambdaN, 1000.0);
