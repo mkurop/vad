@@ -26,5 +26,5 @@ find_package(sohnvad REQUIRED)
 
 add_executable( <your target> <your sources> )
 
-target_link_libraries( <your target> sohnvar)
+target_link_libraries( <your target> sohnvad)
 ```
