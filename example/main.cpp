@@ -34,7 +34,7 @@ int main(int argc, char *argv[]){
   AudioFile<float> audioFile;
 
   // !< Load test file 
-  audioFile.load("../../data/SI2290.wav");
+  audioFile.load("../data/SI2290.wav");
 
   int start = 0;
 
